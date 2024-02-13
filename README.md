@@ -1,8 +1,18 @@
 # podinfo-custom
-// TODO(user): Add simple overview of use/purpose
+A custom Podinfo deployment created with `Kubebuilder` and using the `deploy-image/v1-alpha` plugin. A redis cache is deployed alongside it.
+
+## Todo
+- Hook up the controller logic for enabling redis on the custom deployment, currently redis enablement is static
+- Expose the Podinfo deployment as a `ClusterIP` service
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+To get started:
+- Install the CRD on your cluster
+- Deploy the controller to the cluster with the specified `IMG` environment variable, if testing locally run:
+  ```sh
+  make build && make run
+  ```
+- Create an instance of the `MyAppResource` kind by applying the sample from `config/sample` folder to the cluster
 
 ## Getting Started
 
@@ -19,20 +29,26 @@
 make docker-build docker-push IMG=<some-registry>/podinfo-custom:tag
 ```
 
+**The image has already been published on DockerHub and can be fetched from DockerHub as follows:**
+```sh
+docker pull docker.io/anandg112/podinfo-custom:latest
+```
+
 **NOTE:** This image ought to be published in the personal registry you specified. 
 And it is required to have access to pull the image from the working environment. 
 Make sure you have the proper permission to the registry if the above commands don’t work.
 
 **Install the CRDs into the cluster:**
-
 ```sh
-make install
+ kustomize build config/crd | kubectl apply -f -
 ```
 
 **Deploy the Manager to the cluster with the image specified by `IMG`:**
 
 ```sh
-make deploy IMG=<some-registry>/podinfo-custom:tag
+export IMG="docker.io/anandg112/podinfo-custom:latest"
+cd config/manager && kustomize edit set image controller=${IMG}
+kustomize build config/default | kubectl apply -f -
 ```
 
 > **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin 
@@ -45,7 +61,7 @@ You can apply the samples (examples) from the config/sample:
 kubectl apply -k config/samples/
 ```
 
->**NOTE**: Ensure that the samples has default values to test it out.
+>**NOTE**: Sample has been populated with sane default values to test it out
 
 ### To Uninstall
 **Delete the instances (CRs) from the cluster:**
